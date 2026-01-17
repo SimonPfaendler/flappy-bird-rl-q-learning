@@ -4,9 +4,9 @@ import numpy as np
 import time
 
 
-horiz_bins = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.1, 1.5])
-vert_bins = np.linspace(-0.5, 1.5, 14) 
-vel_bins = np.array([-2.0, -0.9, -0.7, -0.5, -0.3, -0.1, 0.0, 0.2, 0.4, 0.6, 1.0])
+horiz_bins = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.5])
+vert_bins = np.array([-0.4, -0.2, -0.1, -0.05, 0.0, 0.05, 0.1, 0.2, 0.4])
+vel_bins = np.array([-3.0, -2.0, -1.0, -0.5, -0.2, 0.0, 0.2, 0.5, 1.0, 2.0])
 
 def get_discrete_state(state):
     horiz_dist = state[3]

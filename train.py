@@ -5,33 +5,33 @@ import random
 
 
 env = gymnasium.make("FlappyBird-v0", render_mode=None, use_lidar=False)
-
-
-horiz_bins = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.1, 1.5])
-vert_bins = np.linspace(-0.5, 1.5, 14) 
-vel_bins = np.array([-2.0, -0.9, -0.7, -0.5, -0.3, -0.1, 0.0, 0.2, 0.4, 0.6, 1.0])
+horiz_bins = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.5])
+vert_bins = np.array([-0.4, -0.2, -0.1, -0.05, 0.0, 0.05, 0.1, 0.2, 0.4])
+vel_bins = np.array([-3.0, -2.0, -1.0, -0.5, -0.2, 0.0, 0.2, 0.5, 1.0, 2.0])
 
 state_dims = (len(horiz_bins)+1, len(vert_bins)+1, len(vel_bins)+1)
-q_table = np.zeros(state_dims + (env.action_space.n,))
+q_table = np.full(state_dims + (env.action_space.n,))
 
 def get_discrete_state(state):
     horiz_dist = state[3]
-    vert_dist = state[5] - state[9] 
+    gap_center_y = state[5] + 0.1 
+    vert_dist = gap_center_y - state[9] 
     velocity = state[10]
     
     x = np.digitize(horiz_dist, horiz_bins)
     y = np.digitize(vert_dist, vert_bins)
     v = np.digitize(velocity, vel_bins)
+    
     return (x, y, v)
 
-
-episodes = 200000       
+episodes = 50000   
 epsilon = 1.0          
-epsilon_min = 0.01
+epsilon_min = 0.0001
 epsilon_decay = 0.9997 
-alpha = 0.1    
+alpha = 0.05    
 gamma = 0.99   
-lam = 0.3
+lam = 0.7
+
 
 print("Training")
 
@@ -51,16 +51,18 @@ for episode in range(episodes):
     eligibility_trace = np.zeros_like(q_table)
 
     while not terminated:
-        next_state, reward, terminated, truncated, info = env.step(action)
+        next_state, reward_env, terminated, truncated, info = env.step(action)
         next_state_disc = get_discrete_state(next_state)
 
         # --- REWARD SYSTEM ---
         vert_diff = next_state[5] - next_state[9]
 
         if terminated:
-            reward = -100 
-        elif reward > 0.9: 
+            reward = -500 
+        elif reward_env > 0.9: 
             reward = 200  
+        elif reward_env < 0:
+            reward = reward_env
         else:
             reward = 0.1
 
@@ -71,7 +73,6 @@ for episode in range(episodes):
             next_action = np.argmax(q_table[next_state_disc])
 
         # SARSA(Lambda) Update
-        
         # 1. TD-Fehler
         current_q = q_table[state_disc + (action,)]
         if terminated:
