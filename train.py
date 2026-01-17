@@ -5,16 +5,23 @@ import random
 
 
 env = gymnasium.make("FlappyBird-v0", render_mode=None, use_lidar=False)
-horiz_bins = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.5])
-vert_bins = np.array([-0.4, -0.2, -0.1, -0.05, 0.0, 0.05, 0.1, 0.2, 0.4])
-vel_bins = np.array([-3.0, -2.0, -1.0, -0.5, -0.2, 0.0, 0.2, 0.5, 1.0, 2.0])
+horiz_bins = np.array([-0.1, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0])
+vert_bins = np.array([
+    -0.5, -0.3, -0.2, 
+    -0.15, -0.1, -0.075, -0.05, -0.025,  # Sehr fein UNTER der Mitte (Vogel fällt oft hier)
+    0.0, 
+    0.025, 0.05, 0.075, 0.1, 0.15,      # Sehr fein ÜBER der Mitte
+    0.2, 0.3, 0.5
+])
+vel_bins = np.array([-4.0, -3.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.5, 3.0])
 
 state_dims = (len(horiz_bins)+1, len(vert_bins)+1, len(vel_bins)+1)
-q_table = np.full(state_dims + (env.action_space.n,))
+q_table = np.full(state_dims + (env.action_space.n,), 0.5)
 
 def get_discrete_state(state):
     horiz_dist = state[3]
-    gap_center_y = state[5] + 0.1 
+    gap_center_y = (state[5] + 0.1) - 0.04 
+    
     vert_dist = gap_center_y - state[9] 
     velocity = state[10]
     
@@ -24,7 +31,8 @@ def get_discrete_state(state):
     
     return (x, y, v)
 
-episodes = 50000   
+#Hyperparameters
+episodes = 100000   
 epsilon = 1.0          
 epsilon_min = 0.0001
 epsilon_decay = 0.9997 

@@ -4,13 +4,21 @@ import numpy as np
 import time
 
 
-horiz_bins = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.5])
-vert_bins = np.array([-0.4, -0.2, -0.1, -0.05, 0.0, 0.05, 0.1, 0.2, 0.4])
-vel_bins = np.array([-3.0, -2.0, -1.0, -0.5, -0.2, 0.0, 0.2, 0.5, 1.0, 2.0])
+horiz_bins = np.array([-0.1, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0])
+vert_bins = np.array([
+    -0.5, -0.3, -0.2, 
+    -0.15, -0.1, -0.075, -0.05, -0.025,  # Sehr fein UNTER der Mitte (Vogel fällt oft hier)
+    0.0, 
+    0.025, 0.05, 0.075, 0.1, 0.15,      # Sehr fein ÜBER der Mitte
+    0.2, 0.3, 0.5
+])
+vel_bins = np.array([-4.0, -3.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.5, 3.0])
 
 def get_discrete_state(state):
     horiz_dist = state[3]
-    vert_dist = state[5] - state[9] 
+    gap_center_y = (state[5] + 0.1) - 0.04 
+    
+    vert_dist = gap_center_y - state[9] 
     velocity = state[10]
     
     x = np.digitize(horiz_dist, horiz_bins)
