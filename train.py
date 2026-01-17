@@ -13,7 +13,7 @@ epsilon = 1.0
 epsilon_min = 0.0
 epsilon_decay = 0.9995 
 alpha = 0.1
-gamma = 1   
+gamma = 0.99   
 lam = 0.8
 
 eligibility_trace = np.zeros_like(q_table)

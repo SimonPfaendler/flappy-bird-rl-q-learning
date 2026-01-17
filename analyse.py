@@ -2,6 +2,7 @@ import gymnasium
 import flappy_bird_gymnasium
 import time
 import numpy as np
+import pygame
 
 
 env = gymnasium.make("FlappyBird-v0", render_mode="human", use_lidar=False)
@@ -24,10 +25,19 @@ feature_names = [
 state, _ = env.reset()
 
 print("--- START ANALYSE ---")
+print("Press SPACE to flap!")
 
 while True:
+    # Handle PyGame events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            env.close()
+            exit()
+
+    keys = pygame.key.get_pressed()
+    
     action = 0 
-    if state[10] < -0.5:
+    if keys[pygame.K_SPACE]:
         action = 1
         
     state, reward, terminated, truncated, info = env.step(action)
@@ -50,11 +60,23 @@ while True:
         print(f"{name}: {val:.4f}{marker}")
 
 
-    time.sleep(0.5)
+    time.sleep(0.05)
 
     if terminated:
         print("\n--- GESTORBEN ---")
-        time.sleep(1)
+        print("Press SPACE to restart")
+        while True:
+            # Handle PyGame events to allow closing
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    env.close()
+                    exit()
+            
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_SPACE]:
+                break
+            
+            time.sleep(0.1)
+
         state, _ = env.reset()
-        env.close()
 
