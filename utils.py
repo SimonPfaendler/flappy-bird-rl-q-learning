@@ -8,7 +8,7 @@ vert_bins = np.array([
     0.025, 0.05, 0.075, 0.1, 0.15,      # Sehr fein ÜBER der Mitte
     0.2, 0.3, 0.5
 ])
-vel_bins = np.array([-4.0, -3.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.5, 3.0])
+vel_bins = np.array([-9.0, -7.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 4.0, 6.0])
 
 STATE_DIMS = (len(horiz_bins)+1, len(vert_bins)+1, len(vel_bins)+1)
 

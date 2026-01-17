@@ -13,10 +13,12 @@ epsilon = 1.0
 epsilon_min = 0.0
 epsilon_decay = 0.9995 
 alpha = 0.1
-gamma = 0.99   
-lam = 0.7
+gamma = 1   
+lam = 0.8
 
 eligibility_trace = np.zeros_like(q_table)
+
+scores_history = []
 
 print("Training")
 
@@ -50,6 +52,10 @@ for episode in range(episodes):
                 next_state = next_state_s # Update next_state to the latest
                 terminated = terminated_s or terminated
                 truncated = truncated_s or truncated
+                
+                # Decay traces for the skipped step
+                eligibility_trace *= (gamma * lam)
+                eligibility_trace[eligibility_trace < 0.01] = 0
 
         next_state_disc = utils.get_discrete_state(next_state)
 
@@ -93,12 +99,19 @@ for episode in range(episodes):
         action = next_action
         step_count += 1
     
-    
+    scores_history.append(step_count)
+    if len(scores_history) > 100:
+        scores_history.pop(0)
+
     if epsilon > epsilon_min:
         epsilon *= epsilon_decay
 
+    if alpha > 0.01:
+        alpha *= 0.99995
+
     if episode % 1000 == 0:
-        print(f"Episode: {episode}, Score: {step_count}, Epsilon: {epsilon:.4f}")
+        avg_score = np.mean(scores_history)
+        print(f"Episode: {episode}, Score: {step_count}, Avg Score: {avg_score:.2f}, Epsilon: {epsilon:.4f}, Alpha: {alpha:.2f}")
 
 np.save("brain.npy", q_table)
 print("Training finish")
