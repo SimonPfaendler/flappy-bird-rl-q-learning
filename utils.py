@@ -23,10 +23,7 @@ def get_discrete_state(state):
     # Extract raw features
     dist_x = state[3]
     
-    # Calculate Dist Y to GAP CENTER (Player Y - (Pipe Bottom Y + 0.1))
-    # Pipe Gap is usually 0.2, so center is Bottom + 0.1
-    pipe_gap_center = state[5] + 0.1
-    dist_y = state[9] - pipe_gap_center
+    dist_y = state[9] - state[5]
     
     velocity = state[10]
     

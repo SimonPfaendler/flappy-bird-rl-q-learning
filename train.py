@@ -12,11 +12,11 @@ env = gymnasium.make("FlappyBird-v0", render_mode=None, use_lidar=False)
 
 # Hyperparameters
 episodes = 20000
-alpha = 0.2         # Learning rate
+alpha = 0.1         # Learning rate
 gamma = 0.98        # Discount factor
 epsilon = 0.0       # Greedy policy (exploration via optimistic init)
 init_q = 0.1        # Optimistic Initialization
-lam = 0.9           # Lambda for eligibility traces
+lam = 0.7           # Lambda for eligibility traces
 trace_min = 0.01    # Threshold to prune traces
 
 # Q-Table as defaultdict
@@ -57,7 +57,7 @@ try:
             # Custom Reward Logic
             if terminated:
                 reward = -1000
-            elif reward > 1.0: # Passed a pipe
+            elif reward >= 1.0: # Passed a pipe
                 reward = 5.0
             else:
                 reward = 0.5 # Survival reward per frame
