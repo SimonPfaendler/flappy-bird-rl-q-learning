@@ -7,16 +7,15 @@ import pickle
 import os
 from collections import defaultdict
 
-# Create Environment
 env = gymnasium.make("FlappyBird-v0", render_mode=None, use_lidar=False)
 
 # Hyperparameters
 episodes = 20000
-alpha = 0.1         # Learning rate
-gamma = 0.98        # Discount factor
+alpha = 0.09         # Learning rate
+gamma = 0.99        # Discount factor
 epsilon = 0.0       # Greedy policy (exploration via optimistic init)
-init_q = 0.1        # Optimistic Initialization
-lam = 0.7           # Lambda for eligibility traces
+init_q = 1000        # Optimistic Initialization
+lam = 0.8           # Lambda for eligibility traces
 trace_min = 0.01    # Threshold to prune traces
 
 # Q-Table as defaultdict
@@ -26,6 +25,7 @@ q_table = defaultdict(lambda: [init_q, init_q])
 # Training Metrics
 scores_history = []
 best_score = 0
+best_pipes = 0
 
 print(f"Starting Training: Q-Learning with Traces (Alpha={alpha}, Gamma={gamma}, InitQ={init_q}, Lambda={lam})")
 
@@ -41,10 +41,10 @@ try:
         truncated = False
         step_count = 0
         total_reward = 0
+        score = 0 # Pipes passed
         
         while not (terminated or truncated):
-            # Select Action: Greedy (due to epsilon=0.0)
-            # Break ties randomly
+            # Select Action: Greedy
             q_values = q_table[current_state_key]
             if q_values[0] == q_values[1]:
                 action = random.choice([0, 1])
@@ -58,9 +58,10 @@ try:
             if terminated:
                 reward = -1000
             elif reward >= 1.0: # Passed a pipe
-                reward = 5.0
+                reward = 5
+                score += 1
             else:
-                reward = 0.5 # Survival reward per frame
+                reward = 1 # Survival reward per frame
                 
             total_reward += reward
             
@@ -68,6 +69,12 @@ try:
             next_state_key = utils.get_discrete_state(next_state)
             
             # --- Q-Learning with Eligibility Traces ---
+            
+            # dynamic alpha
+            #current_alpha = alpha
+            #if score >= 10:
+             #   reward = 1000
+              #  current_alpha = 0.2 # Boost learning for successful runs
             
             # 1. Calculate TD Error
             # delta = R + gamma * max_a(Q(s', a)) - Q(s, a)
@@ -79,8 +86,6 @@ try:
             traces[current_state_key][action] = 1.0
             
             # 3. Update Q-values and Decay Traces for ALL active states
-            # To optimize, we iterate over the copy of keys or items to allow modification/deletion
-            # OR we create a list of keys to remove
             keys_to_remove = []
             
             for state_key, trace_values in traces.items():
@@ -93,7 +98,7 @@ try:
                         # Decay Trace
                         traces[state_key][a] *= (gamma * lam)
                     else:
-                        # Just ensure it's zero if it fell below threshold logic previously (or was 0)
+                        # Just ensure it's zero if it fell below threshold logic previously
                         traces[state_key][a] = 0.0
                 
                 # If both traces are practically zero, mark for removal to keep dict small
@@ -111,11 +116,20 @@ try:
         scores_history.append(step_count)
         if step_count > best_score:
             best_score = step_count
+            
+        if score > best_pipes:
+            best_pipes = score
         
         # Logging
         if episode % 1000 == 0:
             avg_score = np.mean(scores_history[-100:]) if scores_history else 0
-            print(f"Episode: {episode}, Score: {step_count}, Best Score: {best_score}, Avg Score: {avg_score:.2f}, Q-Table Size: {len(q_table)}")
+            
+            # Alpha Decay on High Score
+            if avg_score > 120.0:
+                alpha = max(0.001, alpha * 0.95)
+                print(f"High Avg Score! Decayed Alpha to {alpha:.4f}")
+                
+            print(f"Episode: {episode}, Score: {step_count}, Best Score: {best_score}, Best Pipes: {best_pipes}, Avg Score: {avg_score:.2f}, Pipe: {score}, Alpha: {alpha:.4f}, Q-Table Size: {len(q_table)}")
             
 except KeyboardInterrupt:
     print("Training Interrupted by User")

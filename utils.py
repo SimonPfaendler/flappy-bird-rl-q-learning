@@ -28,7 +28,7 @@ def get_discrete_state(state):
     velocity = state[10]
     
     # Discretization parameters
-    round_x = 0.15
+    round_x = 0.1
     round_y = 0.1
     round_v = 1.0
     
@@ -38,5 +38,4 @@ def get_discrete_state(state):
     d_v = round_v * math.floor(velocity / round_v)
     
     # Return as tuple for dictionary key
-    # Rounding to avoids floating point weirdness in keys (optional but good practice)
     return (round(d_x, 2), round(d_y, 2), round(d_v, 2))
