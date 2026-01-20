@@ -11,7 +11,7 @@ env = gymnasium.make("FlappyBird-v0", render_mode=None, use_lidar=False)
 
 # Hyperparameters
 episodes = 20000
-alpha = 0.09         # Learning rate
+alpha = 0.3        # Learning rate
 gamma = 0.99        # Discount factor
 epsilon = 0.0       # Greedy policy (exploration via optimistic init)
 init_q = 1000        # Optimistic Initialization
@@ -24,6 +24,7 @@ q_table = defaultdict(lambda: [init_q, init_q])
 
 # Training Metrics
 scores_history = []
+pipe_history = []
 best_score = 0
 best_pipes = 0
 
@@ -114,6 +115,7 @@ try:
             step_count += 1
             
         scores_history.append(step_count)
+        pipe_history.append(score)
         if step_count > best_score:
             best_score = step_count
             
@@ -123,13 +125,14 @@ try:
         # Logging
         if episode % 1000 == 0:
             avg_score = np.mean(scores_history[-100:]) if scores_history else 0
+            avg_pipe = np.mean(pipe_history[-100:]) if pipe_history else 0
             
             # Alpha Decay on High Score
             if avg_score > 120.0:
                 alpha = max(0.001, alpha * 0.95)
                 print(f"High Avg Score! Decayed Alpha to {alpha:.4f}")
                 
-            print(f"Episode: {episode}, Score: {step_count}, Best Score: {best_score}, Best Pipes: {best_pipes}, Avg Score: {avg_score:.2f}, Pipe: {score}, Alpha: {alpha:.4f}, Q-Table Size: {len(q_table)}")
+            print(f"Episode: {episode}, Score: {step_count}, Best Score: {best_score}, Best Pipes: {best_pipes}, Avg Score: {avg_score:.2f}, Pipe: {score}, Avg Pipe: {avg_pipe}, Alpha: {alpha:.4f}, Q-Table Size: {len(q_table)}")
             
 except KeyboardInterrupt:
     print("Training Interrupted by User")
